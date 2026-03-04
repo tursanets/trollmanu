@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Enciclopédia da Vida da Manu Chupa Pika</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #f9fafb, #e5e7eb);
+            color: #111827;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #7e22ce, #db2777, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-bg {
+            background: linear-gradient(90deg, #9333ea, #ec4899);
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-delay: var(--delay, 0ms);
+        }
+        .carousel-item { 
+            transition: opacity 1s ease-in-out;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .carousel-item img, .carousel-item video {
+            object-fit: contain;
+            max-height: 100%;
+            max-width: 100%;
+        }
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; perspective: 1000px; }
+        .memory-card { aspect-ratio: 1 / 1; transform-style: preserve-3d; transition: transform 0.6s, opacity 0.3s; cursor: pointer; position: relative; }
+        .memory-card.is-flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 1rem; overflow: hidden; }
+        .card-front { 
+            transform: rotateY(180deg); 
+            background-size: contain; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            background-color: #f9fafb; 
+        }
+        .card-back { background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: #9ca3af; }
+        .shuffling .memory-card { opacity: 0; transform: scale(0.8); }
+        #reaction-box { transition: background-color 0.2s; }
+        #camera-mirror { transform: scaleX(-1); }
+
+        .blurred-image-container { position: relative; cursor: pointer; overflow: hidden; border-radius: 1rem; }
+        .blurred-image-container img { transition: filter 0.5s ease-in-out; filter: blur(20px); }
+        .blurred-image-container .overlay { position: absolute; inset: 0; background-color: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.5s ease-in-out; opacity: 1; }
+        .blurred-image-container.revealed img { filter: blur(0); }
+        .blurred-image-container.revealed .overlay { opacity: 0; }
+        .action-button { transition: background-color 0.2s, box-shadow 0.2s; }
+        .action-button:hover { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
+        
+        /* Botão fujão */
+        #btn-no-proposal {
+            transition: top 0.1s linear, left 0.1s linear; /* Movimento mais rápido */
+            z-index: 50;
+            position: absolute;
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Efeito de tremer */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        /* Efeito de vidro quebrado na câmera */
+        .broken-glass {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 50px 50px;
+            background-position: 0 0, 0 25px, 25px -25px, -25px 0px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.7;
+            mix-blend-mode: overlay;
+        }
+        
+        /* Efeito de rachadura */
+        .crack {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, transparent 20px, rgba(255,255,255,0.3) 21px, transparent 22px),
+                radial-gradient(circle at 80% 20%, transparent 20px, rgba(255,255,255,0.3) 21px, transparent 22px),
+                linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.4) 49%, rgba(255,255,255,0.4) 51%, transparent 52%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+        
+        /* Estilos para o Tinder */
+        .tinder-card {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .tinder-card.swipe-left {
+            transform: translateX(-1000px) rotate(-30deg);
+            opacity: 0;
+        }
+        .tinder-card.swipe-right {
+            transform: translateX(1000px) rotate(30deg);
+            opacity: 0;
+        }
+        
+        /* Estilo para o último match obrigatório */
+        .forced-match {
+            border: 3px solid #ff00ff;
+            box-shadow: 0 0 20px #ff00ff;
+        }
+        
+        /* Tela de bloqueio do contrato */
+        #contract-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .contract-card {
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* Modal de premiação */
+        .prize-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .prize-modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .prize-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .prize-modal-overlay.active .prize-modal-content {
+            transform: scale(1);
+        }
+        
+        .close-prize {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10002;
+            transition: all 0.2s ease;
+            color: #333;
+        }
+        
+        .close-prize:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+        
+        /* Efeito de piscar para o botão NÃO */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .blink {
+            animation: blink 0.8s infinite;
+        }
+        
+        /* Para o jogo da memória */
+        .memory-card.matched {
+            opacity: 0.7;
+            cursor: default;
+        }
+        
+        .memory-card.matched .card-front {
+            border: 3px solid #10b981;
+        }
+        
+        /* Modal específico para a Missão Secreta */
+        .secret-mission-modal .prize-modal-content {
+            max-width: 800px;
+        }
+        
+        /* Botão X para fechar no modal padrão */
+        .modal-close-x {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .modal-close-x:hover {
+            background: rgba(0,0,0,0.05);
+            color: #333;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="contract-overlay" class="flex items-center justify-center p-4">
+        <div class="contract-card card p-8 sm:p-12">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-center mb-8 gradient-text">CONTRATO DE AMIZADE OBRIGATÓRIO</h2>
+            <div class="h-64 bg-gray-100 p-6 rounded-lg overflow-y-auto text-base sm:text-lg text-gray-700 mb-8 border-2 border-purple-300">
+                <p class="font-bold text-lg mb-4 text-purple-800">ATENÇÃO: Este site só será liberado após aceitar todos os termos abaixo.</p>
+                <p class="mb-3">Ao marcar a caixa de concordância, eu, <span class="font-bold">Manu mamadora</span>, declaro sob pena de perda de amizade eterna que:</p>
+                <ol class="list-decimal pl-6 mb-4 space-y-3">
+                    <li class="font-semibold">Concordo em rir de todas as piadas e brincadeiras deste site, mesmo as piores.</li>
+                    <li class="font-semibold">Me comprometo a pagar o açaí do Narigudo no valor de R$ 39,90 + taxa de amizade de R$ 20,00.</li>
+                    <li class="font-semibold">Reconheço e admito publicamente que sou baixinha, fedida e extremamente chata às vezes.</li>
+                    <li class="font-semibold">Prometo não me vingar por este site, nem contar para minha mãe ou autoridades competentes.</li>
+                    <li class="font-semibold">Comprometo-me a mandar foto dos meus seios para o Pedro Narigudo em até 24 horas após aceitar este contrato.</li>
+                    <li class="font-semibold">Aceito que o Pedro é mais bonito, inteligente, engraçado e cheiroso do que eu.</li>
+                    <li class="font-semibold">Reconheço que não tomar banho diariamente é crime contra a humanidade e me comprometo a melhorar.</li>
+                    <li class="font-semibold">Este contrato é irrevogável, perpétuo e vinculante até o fim dos tempos.</li>
+                </ol>
+                <p class="text-sm text-gray-600 mt-6">Penalidade por descumprimento: Exposição pública de todas as suas fotos vergonhosas.</p>
+            </div>
+            <div class="text-center">
+                <label class="flex items-center justify-center mb-8">
+                    <input type="checkbox" id="contract-checkbox" class="h-8 w-8 rounded border-2 border-purple-500 text-purple-600 focus:ring-purple-500 mr-4">
+                    <span class="text-xl font-bold text-gray-800">LI, ENTENDI E ACEITO TODOS OS TERMOS ACIMA</span>
+                </label>
+                <button id="contract-accept-button" class="gradient-bg text-white font-bold py-4 px-16 rounded-full text-xl transition-transform hover:scale-105 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    ACEITAR E LIBERAR SITE
+                </button>
+                <p class="text-gray-500 text-sm mt-6">Não há opção de recusa. Se não aceitar, o site permanecerá bloqueado para sempre.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="memory-prize-modal" class="prize-modal-overlay">
+        <div class="prize-modal-content">
+            <div class="close-prize" onclick="closeMemoryPrize()">×</div>
+            <div class="bg-white">
+                <div class="p-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                    <h3 class="text-2xl font-bold text-center">🎉 PARABÉNS! VOCÊ COMPLETOU O TESTE! 🎉</h3>
+                    <p class="text-center mt-2 text-white/90">Aqui está sua premiação especial:</p>
+                </div>
+                <div class="p-4">
+                    <img id="memory-prize-image" src="dedo.jpeg" alt="Prêmio" class="w-full h-auto max-h-[60vh] object-contain rounded-lg">
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-gray-700 mb-4">Você desbloqueou uma foto especial do arquivo secreto!</p>
+                    <p class="text-sm text-gray-500">Esta foto só está disponível para os melhores jogadores!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="secret-mission-modal" class="prize-modal-overlay secret-mission-modal">
+        <div class="prize-modal-content">
+            <div class="close-prize" onclick="closeSecretMissionModal()">×</div>
+            <div class="bg-white">
+                <div class="p-6 bg-gradient-to-r from-red-600 to-pink-600 text-white">
+                    <h3 class="text-2xl font-bold text-center">🔓 FOTO PROIBIDA DESBLOQUEADA! 🔓</h3>
+                    <p class="text-center mt-2 text-white/90">Você descobriu o segredo mais bem guardado!</p>
+                </div>
+                <div class="p-4">
+                    <img id="secret-mission-image" src="" alt="Foto Proibida" class="w-full h-auto max-h-[70vh] object-contain rounded-lg">
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-gray-700 mb-4">Esta imagem estava classificada como <strong class="text-red-600">ULTRA SECRETA</strong>.</p>
+                    <p class="text-sm text-gray-500">Agora você faz parte do grupo seleto que viu isso. Use com sabedoria.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl p-8 text-center max-w-sm mx-auto transform transition-all duration-300 scale-95 relative">
+            <button class="modal-close-x" onclick="closeModal()">×</button>
+            <h3 id="modal-title" class="text-2xl sm:text-3xl font-bold gradient-text mb-4">Aviso!</h3>
+            <p id="modal-message" class="text-base sm:text-lg text-gray-700 mb-6">Mensagem</p>
+            <button id="modal-btn" onclick="closeModal()" class="gradient-bg text-white font-bold py-2 px-8 rounded-full transition-transform hover:scale-105 hover:brightness-110">Entendido</button>
+        </div>
+    </div>
+    
+    <div id="camera-modal" class="fixed inset-0 bg-black z-50 hidden flex-col items-center justify-center">
+        <video id="camera-mirror" class="absolute w-full h-full object-cover" autoplay playsinline></video>
+        <div class="broken-glass"></div>
+        <div class="crack"></div>
+        <div class="relative text-center text-white p-4 bg-black bg-opacity-50 rounded-lg z-10">
+            <h2 class="text-2xl sm:text-3xl font-bold">Câmera: Manu</h2>
+            <p class="text-lg sm:text-xl">MEU DEUS DO CÉU, QUE SUSTO, A CAMERA QUASE QUEBROU</p>
+        </div>
+        <button onclick="closeCamera()" class="absolute bottom-10 gradient-bg text-white font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 hover:brightness-110 z-10">Fechar Câmera Quebrada</button>
+    </div>
+
+    <div class="container mx-auto p-4 max-w-3xl hidden" id="main-content">
+        <header class="text-center py-12 sm:py-16 fade-in-up">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold gradient-text leading-tight">A Enciclopédia da Vida da Manu</h1>
+            <p class="text-xl sm:text-2xl font-bold mt-2 text-gray-800">(Feito por 👃)</p>
+        </header>
+
+        <main class="space-y-12 sm:space-y-16">
+            
+            <section class="fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Galeria de Arte: "Suas Melhores Fotos"</h2>
+                <div class="card relative p-4">
+                    <div id="carousel" class="relative overflow-hidden rounded-xl h-[60vh] sm:h-[70vh] md:h-[80vh] bg-black">
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (1).png" alt="Foto zoada 1"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (2).png" alt="Foto zoada 2"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (3).png" alt="Foto zoada 3"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (4).png" alt="Foto zoada 4"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (5).png" alt="Foto zoada 5"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (6).png" alt="Foto zoada 6"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (7).png" alt="Foto zoada 7"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (8).png" alt="Foto zoada 8"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (9).png" alt="Foto zoada 9"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (10).png" alt="Foto zoada 10"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (11).png" alt="Foto zoada 11"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (12).png" alt="Foto zoada 12"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (13).png" alt="Foto zoada 13"></div>
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (14).png" alt="Foto zoada 14"></div>                       
+                        <div class="carousel-item absolute w-full h-full opacity-0"><img src="teste (15).png" alt="Foto zoada 15"></div>    
+
+                        <div class="carousel-item absolute w-full h-full opacity-0">
+                            <video class="w-full h-full object-contain" controls>
+                                <source src="teste (1).mp4" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                        </div>  
+                        <div class="carousel-item absolute w-full h-full opacity-0">
+                            <video class="w-full h-full object-contain" controls>
+                                <source src="teste (2).mp4" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                        </div>
+                        <div class="carousel-item absolute w-full h-full opacity-0">
+                            <video class="w-full h-full object-contain" controls>
+                                <source src="teste (3).mp4" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                        </div>  
+                        <div class="carousel-item absolute w-full h-full opacity-0">
+                            <video class="w-full h-full object-contain" controls>
+                                <source src="teste (4).mp4" type="video/mp4">
+                                Seu navegador não suporta vídeos.
+                            </video>
+                        </div>
+                    </div>
+                    <button id="prev-btn" class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md transition-transform hover:scale-110 z-20">&lt;</button>
+                    <button id="next-btn" class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md transition-transform hover:scale-110 z-20">&gt;</button>
+                </div>
+            </section>
+            
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Tinder da Manu: 4 Candidatos Desesperados</h2>
+                <div class="text-center">
+                    <div id="tinder-profiles" class="mb-6 min-h-[400px] relative">
+                        <div id="current-profile" class="tinder-card">
+                            <div class="w-48 h-48 mx-auto bg-gray-200 rounded-full overflow-hidden mb-4">
+                                <img id="profile-img" src="" alt="Perfil" class="w-full h-full object-cover">
+                            </div>
+                            <h3 id="profile-name" class="font-bold text-2xl mb-2"></h3>
+                            <p id="profile-age" class="text-gray-600 mb-2"></p>
+                            <p id="profile-description" class="text-gray-700 mb-4 max-w-md mx-auto"></p>
+                            <p id="profile-counter" class="text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-6">
+                        <button id="tinder-nope" class="w-20 h-20 bg-red-500 text-white rounded-full flex items-center justify-center text-3xl font-bold shadow-lg hover:bg-red-600 transition-transform hover:scale-110">✕</button>
+                        <button id="tinder-like" class="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center text-3xl font-bold shadow-lg hover:bg-green-600 transition-transform hover:scale-110">❤</button>
+                    </div>
+                    <p id="tinder-result" class="mt-6 font-bold text-xl h-12 text-purple-600 flex items-center justify-center"></p>
+                </div>
+            </section>
+
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Hino Oficial da Manu</h2> 
+                <div class="text-center">
+                    <p id="song-title" class="text-lg sm:text-xl font-bold text-gray-800">Nome da Música</p>
+                    <audio id="music-player" controls class="w-full mt-4"></audio>
+                    <div class="flex justify-center gap-4 mt-4">
+                        <button id="prev-song-btn" class="bg-gray-200 p-3 rounded-full hover:bg-gray-300 action-button"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg></button>
+                        <button id="next-song-btn" class="bg-gray-200 p-3 rounded-full hover:bg-gray-300 action-button"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 fade-in-up">
+                <div class="card p-6 sm:p-8 text-center">
+                    <h3 class="text-xl sm:text-2xl font-bold mb-2">Filtro de Beleza</h3>
+                    <p class="text-gray-600 mb-6">Ative nosso reconhecimento fácial</p>
+                    <button onclick="" class="w-full gradient-bg text-white font-bold py-3 px-6 rounded-lg action-button hover:opacity-90">Ativar Câmera Quebrada</button>
+                </div>
+                <div class="card p-6 sm:p-8 text-center">
+                    <h3 class="text-xl sm:text-2xl font-bold mb-2">Analisador de QI</h3>
+                    <p class="text-gray-600 mb-6">Digite seu nome para uma análise.</p>
+                    <input id="qi-name" type="text" placeholder="Manu" class="w-full border-gray-300 rounded-lg mb-4 text-center p-2">
+                    <button id="qi-button" class="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg action-button hover:bg-gray-300">Analisar</button>
+                </div>
+            </section>
+            
+            <section class="fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Ferramentas de Análise Portáteis</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                    <div class="card p-6 sm:p-8 text-center"><h3 class="text-xl sm:text-2xl font-bold mb-2">Detector de Cheiro</h3><p class="text-gray-600 mb-6">Análise de aroma (requer proximidade).</p><button id="smell-test-button" class="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg action-button hover:bg-gray-300">Iniciar Análise</button><p id="smell-test-result" class="mt-4 font-bold text-xl h-8"></p></div>
+                    <div class="card p-6 sm:p-8 text-center"><h3 class="text-xl sm:text-2xl font-bold mb-2">Verificador de Altura</h3><p class="text-gray-600 mb-6">Use o sensor para medição precisa.</p><div id="height-sensor" class="w-24 h-24 bg-blue-100 rounded-full mx-auto flex items-center justify-center cursor-pointer transition-colors hover:bg-blue-200"><p id="height-text" class="font-bold text-blue-800">Sensor</p></div><p id="height-test-result" class="mt-4 font-bold text-xl h-8"></p></div>
+                </div>
+            </section>
+            
+            <section class="fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Arquivo Confidencial: O Namorado Misterioso</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                    <div class="blurred-image-container">
+                        <img src="oruam-foi-preso-agora-v0-lmp20by6ahef1.webp" alt="Foto misteriosa 1" class="w-full h-full object-cover">
+                        <div class="overlay"><svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="font-bold">Clique para Revelar</span></div>
+                    </div>
+                    <div class="blurred-image-container">
+                        <img src="Oruam-ReproducaoInstagram.png" alt="Foto misteriosa 2" class="w-full h-full object-cover">
+                        <div class="overlay"><svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg><span class="font-bold">Clique para Revelar</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-2">Teste de Memória: Nível MAX da Shopee</h2>
+                <p class="text-center text-gray-600 mb-6">Encontre todos os pares para ganhar um prêmio especial!</p>
+                <div id="memory-game" class="memory-grid"></div>
+                <p id="memory-attempts" class="text-center mt-6 font-bold text-lg">Tentativas: 0 | Pares: 0/8</p>
+                <div id="memory-completion-message" class="text-center mt-4 hidden">
+                    <p class="text-green-600 font-bold text-lg">🎉 Parabéns! Você completou o jogo! 🎉</p>
+                    <button id="claim-prize-btn" class="mt-2 gradient-bg text-white font-bold py-2 px-6 rounded-full transition-transform hover:scale-105">Ver Prêmio</button>
+                </div>
+            </section>
+
+            <section class="card p-8 sm:p-12 fade-in-up relative overflow-hidden flex flex-col items-center justify-center min-h-[500px]" id="impossible-question-section">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-center mb-10 gradient-text">Você vai me mandar foto do peito hoje?</h2>
+                <div class="flex gap-4 w-full justify-center items-center relative" style="min-height: 100px;">
+                    <button id="btn-yes-proposal" class="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-3 px-10 rounded-full shadow-lg transform transition-transform hover:scale-110 z-10">
+                        SIM!
+                    </button>
+                    <button id="btn-no-proposal" class="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-10 rounded-full shadow-lg blink relative">
+                        NÃO
+                    </button>
+                </div>
+                <p class="text-gray-400 text-sm mt-8 absolute bottom-4">Pode ser honesta.</p>
+            </section>
+            
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-4">SAC (Serviço de Atendimento ao cliente)</h2>
+                <p class="text-center text-gray-600 mb-6">Tem alguma reclamação sobre o site? Digite abaixo. Essa mensagem irá direeto ao proprietário.</p>
+                <div class="max-w-md mx-auto">
+                    <textarea id="sac-input" rows="4" class="w-full border-gray-300 rounded-lg p-3 focus:ring-purple-500 focus:border-purple-500 shadow-sm" placeholder="Digite sua reclamação aqui..."></textarea>
+                    <button id="sac-submit" class="w-full mt-4 bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors">Enviar Reclamação</button>
+                </div>
+            </section>
+
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Missão Secreta: Desbloqueie a Foto Proibida</h2>
+                <div class="text-center">
+                    <p class="text-gray-600 mb-4">Digite o código secreto para revelar a foto que todos sonham em ver.</p>
+                    <div class="mb-4 max-w-md mx-auto">
+                        <input id="secret-code" type="text" placeholder="Digite o código secreto" class="w-full border-gray-300 rounded-lg p-3 text-center mb-2 text-lg">
+                        <p class="text-sm text-gray-500">Dica: O código é a pessoa que você ama muito.</p>
+                    </div>
+                    <button id="secret-task-button" class="gradient-bg text-white font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 hover:brightness-110 mb-6">Tentar Desbloquear</button>
+                    
+                    <div id="secret-mission-success" class="hidden mt-6">
+                        <p class="text-green-600 font-bold text-lg mb-4">✅ CÓDIGO CORRETO! A foto proibida foi desbloqueada!</p>
+                        <button id="view-secret-photo-btn" class="bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 hover:brightness-110 shadow-lg">
+                            🔓 VER FOTO PROIBIDA
+                        </button>
+                        <p class="text-sm text-gray-500 mt-4">Atenção: Esta imagem contém conteúdo ultra secreto!</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 fade-in-up">
+                <div class="card p-6 sm:p-8 text-center"><h3 class="text-xl sm:text-2xl font-bold mb-4">Gerador de Elogios</h3><p class="text-gray-600 mb-6">Um elogio 100% honesto.</p><button id="praise-button" class="gradient-bg text-white font-bold py-3 px-8 rounded-full transition-transform hover:scale-105 hover:brightness-110">Gerar Elogio</button><p id="praise-output" class="mt-6 text-xl italic text-purple-700 h-12"></p></div>
+                <div class="card p-6 sm:p-8 text-center"><h3 class="text-xl sm:text-2xl font-bold mb-4">Contrato de Amizade (Assinado)</h3><p class="text-gray-600 mb-4">Você já aceitou os termos. Não há volta.</p><div class="h-32 bg-green-50 p-3 rounded-lg overflow-y-auto text-sm text-green-700 border border-green-300"><p>✅ CONTRATO ASSINADO<br>✅ Termos aceitos<br>✅ Compromisso firmado<br>✅ Sem direito a arrependimento</p></div></div>
+            </section>
+
+            <section class="card p-6 sm:p-8 fade-in-up">
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Seu Áudio Vazado</h2>
+                <div class="text-center">
+                    <p class="text-gray-600 mb-4">O que você anda falando por aí? 🤫</p>
+                    <audio controls class="w-full" src="audio manu.mp3"></audio>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center py-12 sm:py-16 mt-8"><p class="text-gray-500">Criado com 0.0% de CARINHO e 100% de RAIVA.</p></footer>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // =============================================
+        // SISTEMA DE CONTRATO OBRIGATÓRIO
+        // =============================================
+        const contractOverlay = document.getElementById('contract-overlay');
+        const contractCheckbox = document.getElementById('contract-checkbox');
+        const contractAcceptButton = document.getElementById('contract-accept-button');
+        const mainContent = document.getElementById('main-content');
+        
+        // Inicialmente, o site principal está escondido
+        mainContent.classList.add('hidden');
+        
+        // Habilitar botão quando checkbox for marcado
+        contractCheckbox.addEventListener('change', (e) => {
+            contractAcceptButton.disabled = !e.target.checked;
+        });
+        
+        // Quando aceitar o contrato
+        contractAcceptButton.addEventListener('click', () => {
+            contractOverlay.style.opacity = '0';
+            contractOverlay.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                contractOverlay.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                
+                // Iniciar animações do site
+                initSiteAnimations();
+                
+                showModal('CONTRATO ACEITO!', 'Agora você está comprometida com todos os termos. Não há volta!');
+            }, 500);
+        });
+        
+        // =============================================
+        // INICIALIZAÇÃO DO SITE (após aceitar contrato)
+        // =============================================
+        function initSiteAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.fade-in-up').forEach((el, index) => {
+                el.style.setProperty('--delay', `${index * 100}ms`);
+                observer.observe(el);
+            });
+        }
+        
+        // =============================================
+        // SISTEMA DE MODAL
+        // =============================================
+        const modal = document.getElementById('custom-modal');
+        const modalContent = modal.querySelector('div');
+        const modalBtn = document.getElementById('modal-btn');
+        
+        window.showModal = (title, message, callback = null) => {
+            modal.querySelector('#modal-title').textContent = title;
+            modal.querySelector('#modal-message').textContent = message;
+            
+            if (callback) {
+                modalBtn.onclick = () => {
+                    callback();
+                    closeModal();
+                };
+                modalBtn.textContent = "Confirmar";
+            } else {
+                modalBtn.onclick = closeModal;
+                modalBtn.textContent = "Entendido";
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.add('opacity-100'); modalContent.classList.remove('scale-95'); }, 10);
+        };
+        
+        window.closeModal = () => {
+            modal.classList.remove('opacity-100'); modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
+        // =============================================
+        // SISTEMA DE CÂMERA
+        // =============================================
+        const cameraModal = document.getElementById('camera-modal');
+        const videoEl = document.getElementById('camera-mirror');
+        let stream;
+        window.openCamera = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                videoEl.srcObject = stream;
+                cameraModal.classList.remove('hidden');
+                
+                // Adiciona efeito de "quebrar" a câmera após 1 segundo
+                setTimeout(() => {
+                    const brokenGlass = cameraModal.querySelector('.broken-glass');
+                    const crack = cameraModal.querySelector('.crack');
+                    if (brokenGlass && crack) {
+                        brokenGlass.style.animation = 'none';
+                        crack.style.animation = 'none';
+                        setTimeout(() => {
+                            brokenGlass.style.animation = 'shake 0.5s ease-in-out';
+                            crack.style.animation = 'shake 0.8s ease-in-out';
+                        }, 10);
+                    }
+                }, 1000);
+                
+            } catch (err) {
+                showModal('Câmera Bloqueada', 'Você precisa permitir o acesso à câmera para funcionar, não esteja pelada! (pode estar sim)');
+            }
+        };
+        window.closeCamera = () => {
+            if (stream) { stream.getTracks().forEach(track => track.stop()); }
+            cameraModal.classList.add('hidden');
+        };
+
+        // =============================================
+        // CARROSSEL DE FOTOS E VÍDEOS (ATUALIZADO)
+        // =============================================
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        let currentCarouselIndex = 0;
+        
+        function showCarouselImage(index) {
+            carouselItems.forEach((item, i) => {
+                // Mostra a foto/vídeo atual e esconde as outras
+                item.style.opacity = i === index ? '1' : '0';
+                
+                // Z-index é crucial para os vídeos funcionarem (clicar no play)
+                // Se estiver visível, fica por cima. Se não, fica por baixo.
+                item.style.zIndex = i === index ? '10' : '-1';
+                
+                // LÓGICA DE PAUSAR VÍDEO
+                // Se o item tem um vídeo e NÃO é o slide atual, pausa ele.
+                const video = item.querySelector('video');
+                if (video) {
+                    if (i !== index) {
+                        video.pause();
+                    }
+                }
+            });
+        }
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            currentCarouselIndex = (currentCarouselIndex - 1 + carouselItems.length) % carouselItems.length;
+            showCarouselImage(currentCarouselIndex);
+        });
+        document.getElementById('next-btn').addEventListener('click', () => {
+            currentCarouselIndex = (currentCarouselIndex + 1) % carouselItems.length;
+            showCarouselImage(currentCarouselIndex);
+        });
+        // Inicia mostrando o primeiro
+        showCarouselImage(0);
+        
+        // =============================================
+        // PLAYER DE MÚSICA
+        // =============================================
+        const musicPlayer = document.getElementById('music-player');
+        const songTitleEl = document.getElementById('song-title');
+        const prevSongBtn = document.getElementById('prev-song-btn');
+        const nextSongBtn = document.getElementById('next-song-btn');
+
+        const songs = [
+            { title: "Música 1", src: "Mc Gorila- Cheio de Sal (Gdj Studio) - MC GORILA (youtube).mp3" },
+            { title: "Música 2", src: "vem rasgar minha xrc deixa ela arder ⧸⧸ automotivo novinho depressivo (speed up).mp3" },
+            { title: "Música 3", src: "To Fazendo Amor Com a Favela Toda.mp3" },
+            { title: "Música 4", src: "MC JESSICA DO ESCADÃO - HOJE O DIA TA LINDO - (DJ DO CRIME) - DA PONTE PRA CÁ PRODUTORA (VIDEOCLIP.mp3" },
+            { title: "Música 5", src: "MC JESSICA DO ESCADÃO - AI MEU UUU - DJ DO CRIME  ( DA PONTE PRA CA ).mp3" },
+            { title: "Música 6", src: "MC CAROL - VAMPIRO DE MADUREIRA (feat. MC GORILA) [prod. DuaL].mp3" },
+        ];
+        let currentSongIndex = 0;
+        function loadSong(song) {
+            songTitleEl.textContent = song.title;
+            musicPlayer.src = song.src;
+        }
+        function playPrevSong() {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            loadSong(songs[currentSongIndex]);
+            musicPlayer.play();
+        }
+        function playNextSong() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            loadSong(songs[currentSongIndex]);
+            musicPlayer.play();
+        }
+        prevSongBtn.addEventListener('click', playPrevSong);
+        nextSongBtn.addEventListener('click', playNextSong);
+        musicPlayer.addEventListener('ended', playNextSong);
+        loadSong(songs[currentSongIndex]);
+
+        // =============================================
+        // IMAGENS COM BLUR
+        // =============================================
+        document.querySelectorAll('.blurred-image-container').forEach(item => {
+            item.addEventListener('click', function() { 
+                this.classList.add('revealed');
+                if (this.id === 'secret-revealed-image-container') {
+                    setTimeout(() => {
+                        const overlay = this.querySelector('.overlay');
+                        if (overlay) overlay.style.display = 'none';
+                    }, 3000);
+                }
+            });
+        });
+
+        // =============================================
+        // ANALISADOR DE QI
+        // =============================================
+        document.getElementById('qi-button').addEventListener('click', () => {
+            const name = document.getElementById('qi-name').value || "Manu";
+            const qi = Math.floor(Math.random() * 30) + 60;
+            showModal(`Análise de QI para ${name}`, `Resultado: ${qi}. QI igual de uma macaco.`);
+        });
+
+        // =============================================
+        // DETECTOR DE CHEIRO
+        // =============================================
+        document.getElementById('smell-test-button').addEventListener('click', (e) => {
+            e.target.disabled = true; 
+            document.getElementById('smell-test-result').textContent = 'Analisando...';
+            setTimeout(() => {
+                document.getElementById('smell-test-result').textContent = "Alerta: Banho recomendado!";
+                showModal("Análise Concluída", "Cheiro de merda, não lavou o cu, tá fedendo!");
+                e.target.disabled = false;
+            }, 2000);
+        });
+
+        // =============================================
+        // VERIFICADOR DE ALTURA
+        // =============================================
+        document.getElementById('height-sensor').addEventListener('click', () => {
+            document.getElementById('height-test-result').textContent = 'Medindo...';
+            setTimeout(() => {
+                const altura = "1,49cm (mama em pé)";
+                document.getElementById('height-test-result').textContent = `Resultado: ${altura}`;
+                showModal("Medição Finalizada", `Altura oficial: ${altura}.`);
+            }, 2000);
+        });
+        
+        // =============================================
+        // JOGO DA MEMÓRIA MELHORADO COM PRÊMIO
+        // =============================================
+        const gameContainer = document.getElementById('memory-game');
+        const attemptsEl = document.getElementById('memory-attempts');
+        const memoryCompletionMessage = document.getElementById('memory-completion-message');
+        const claimPrizeBtn = document.getElementById('claim-prize-btn');
+        const memoryPrizeModal = document.getElementById('memory-prize-modal');
+        const memoryPrizeImage = document.getElementById('memory-prize-image');
+        
+        const memoryImages = [
+            'teste (1).png', 'teste (2).png', 'teste (3).png', 'teste (4).png',
+            'teste (5).png', 'teste (6).png', 'teste (7).png', 'teste (8).png',
+        ];
+
+        let flippedCards = []; 
+        let lockBoard = false; 
+        let attempts = 0;
+        let matchedPairs = 0;
+        const totalPairs = 8;
+        
+        function createBoard() {
+            // Duplicar as imagens para fazer pares
+            let cardImages = [...memoryImages, ...memoryImages];
+            
+            // Embaralhar as cartas
+            cardImages = cardImages.sort(() => Math.random() - 0.5);
+            
+            gameContainer.innerHTML = '';
+            matchedPairs = 0;
+            attempts = 0;
+            attemptsEl.textContent = `Tentativas: 0 | Pares: 0/${totalPairs}`;
+            memoryCompletionMessage.classList.add('hidden');
+            
+            cardImages.forEach((imagePath, index) => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.image = imagePath;
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="card-face card-back">?</div>
+                    <div class="card-face card-front" style="background-image: url('${imagePath}')"></div>
+                `;
+                card.addEventListener('click', () => flipCard(card));
+                gameContainer.appendChild(card);
+            });
+        }
+        
+        function flipCard(card) {
+            if (lockBoard || card.classList.contains('is-flipped') || card.classList.contains('matched') || flippedCards.length >= 2) return;
+            
+            card.classList.add('is-flipped');
+            flippedCards.push(card);
+            
+            if (flippedCards.length === 2) {
+                lockBoard = true;
+                attempts++;
+                checkForMatch();
+            }
+        }
+        
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.image === card2.dataset.image;
+            
+            setTimeout(() => {
+                if (isMatch) {
+                    // Par encontrado
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedPairs++;
+                    
+                    if (matchedPairs === totalPairs) {
+                        // Jogo completado!
+                        setTimeout(() => {
+                            memoryCompletionMessage.classList.remove('hidden');
+                            showModal("🎉 PARABÉNS! 🎉", "Você completou o Teste de Memória! Agora pode reivindicar seu prêmio!");
+                        }, 500);
+                    }
+                } else {
+                    // Não é par, vira de volta
+                    card1.classList.remove('is-flipped');
+                    card2.classList.remove('is-flipped');
+                }
+                
+                flippedCards = [];
+                lockBoard = false;
+                updateGameStats();
+            }, 1000);
+        }
+        
+        function updateGameStats() {
+            attemptsEl.textContent = `Tentativas: ${attempts} | Pares: ${matchedPairs}/${totalPairs}`;
+        }
+        
+        function closeMemoryPrize() {
+            memoryPrizeModal.classList.remove('active');
+        }
+        
+        window.closeMemoryPrize = closeMemoryPrize;
+        
+        claimPrizeBtn.addEventListener('click', () => {
+            memoryPrizeImage.src = 'dedo.jpeg';
+            memoryPrizeModal.classList.add('active');
+        });
+        
+        // Inicializar o jogo
+        createBoard();
+        
+        // =============================================
+        // MISSÃO SECRETA - COM MODAL IGUAL AO JOGO DA MEMÓRIA
+        // =============================================
+        const secretTaskButton = document.getElementById('secret-task-button');
+        const secretMissionSuccess = document.getElementById('secret-mission-success');
+        const viewSecretPhotoBtn = document.getElementById('view-secret-photo-btn');
+        const secretMissionModal = document.getElementById('secret-mission-modal');
+        const secretMissionImage = document.getElementById('secret-mission-image');
+        
+        function closeSecretMissionModal() {
+            secretMissionModal.classList.remove('active');
+        }
+        
+        window.closeSecretMissionModal = closeSecretMissionModal;
+        
+        secretTaskButton.addEventListener('click', () => {
+            const code = document.getElementById('secret-code').value.trim();
+            const correctCode = "Pedro"; // Código secreto
+            
+            if (code.toLowerCase() === correctCode.toLowerCase()) {
+                // Mostrar a seção de sucesso
+                secretMissionSuccess.classList.remove('hidden');
+                
+                // Esconder o input e o botão
+                document.getElementById('secret-code').style.display = 'none';
+                document.getElementById('secret-task-button').style.display = 'none';
+                
+                showModal("CÓDIGO CORRETO!", "Parabéns! Você desbloqueou a foto proibida! Clique no botão para ver.");
+            } else {
+                const responses = [
+                    "Errado! O código é o que você menos gosta de admitir.",
+                    "Não é isso. Pense na pessoa mais linda do mundo",
+                    "Errou! Dica: tem a ver com a pessoa que você quer amostrar os peitos",
+                    "Quase! (mentira, tá longe.)",
+                    "O código é um segredo que todo mundo sabe."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                showModal("Código Errado", randomResponse);
+            }
+        });
+        
+        viewSecretPhotoBtn.addEventListener('click', () => {
+            // Carregar a imagem proibida
+            secretMissionImage.src = 'teta.jpeg'; // Use a mesma imagem ou outra
+            // Mostrar o modal
+            secretMissionModal.classList.add('active');
+        });
+
+        // =============================================
+        // TINDER DA Manu MELHORADO
+        // =============================================
+        const tinderProfiles = [
+            {
+                id: 1,
+                name: "Carlos",
+                age: 45,
+                description: "Pra mim lugar de mulher é na cozinha e no banheiro, Brasil acima de tudo, Deus acima de todos!",
+                photo: "images (1).jpeg",
+                matchMessage: "Carlos não te quis!"
+            },
+            {
+                id: 2,
+                name: "Roberto",
+                age: 32,
+                description: "Sou Bolsonarista amo a direita, e quero me casar com uma mulher que faça tudo em casa!",
+                photo: "images (2).jpeg",
+                matchMessage: "Roberto não te quis em."
+            },
+            {
+                id: 3,
+                name: "Fábio",
+                age: 19,
+                description: "Acredito fielmente em terra plana, se você não acredita você é alienado!",
+                photo: "images (3).jpeg",
+                matchMessage: "Fábio não gostou de você."
+            },
+            {
+                id: 4,
+                name: "Leonardo",
+                age: 21,
+                description: "Ex-presidiário, funkeiro/mc de favela, se você não gosta de mim é porque tu é racista piranha.",
+                photo: "images.jpeg",
+                matchMessage: "Leonardo falou que você fede."
+            },
+            {
+                id: 5,
+                name: "Pedro Narigudo",
+                age: 20,
+                description: "Homem fiel, honesto, gostoso, bonito, trabalhador, narigudo, rico, inteligente, engraçado.",
+                photo: "pedro.jpeg",
+                matchMessage: "Pedro Narigudo achou você uma gracinha, agora só mandar foto da teta para ele."
+            }
+        ];
+
+        let currentProfileIndex = 0;
+        const profileImg = document.getElementById('profile-img');
+        const profileName = document.getElementById('profile-name');
+        const profileAge = document.getElementById('profile-age');
+        const profileDescription = document.getElementById('profile-description');
+        const profileCounter = document.getElementById('profile-counter');
+        const tinderLike = document.getElementById('tinder-like');
+        const tinderNope = document.getElementById('tinder-nope');
+        const tinderResult = document.getElementById('tinder-result');
+        const currentProfileCard = document.getElementById('current-profile');
+
+        function loadProfile(index) {
+            const profile = tinderProfiles[index];
+            profileImg.src = profile.photo;
+            profileName.textContent = profile.name;
+            profileAge.textContent = `${profile.age} anos`;
+            profileDescription.textContent = profile.description;
+            profileCounter.textContent = `Candidato ${index + 1} de ${tinderProfiles.length}`;
+            
+            if (index === tinderProfiles.length - 1) {
+                currentProfileCard.classList.add('forced-match');
+                tinderNope.disabled = true;
+                tinderNope.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                currentProfileCard.classList.remove('forced-match');
+                tinderNope.disabled = false;
+                tinderNope.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function showSwipeAnimation(direction) {
+            currentProfileCard.classList.add(direction === 'like' ? 'swipe-right' : 'swipe-left');
+            
+            setTimeout(() => {
+                currentProfileCard.classList.remove('swipe-right', 'swipe-left');
+                currentProfileIndex++;
+                
+                if (currentProfileIndex < tinderProfiles.length) {
+                    loadProfile(currentProfileIndex);
+                } else {
+                    profileImg.src = 'pedro.jpeg';
+                    profileName.textContent = 'FIM DOS CANDIDATOS';
+                    profileAge.textContent = '';
+                    profileDescription.textContent = 'Você viu todos os canditados, e o que mais combina com você é... "Pedro Narigudo".';
+                    tinderLike.disabled = true;
+                    tinderNope.disabled = true;
+                    tinderLike.classList.add('opacity-50', 'cursor-not-allowed');
+                    tinderNope.classList.add('opacity-50', 'cursor-not-allowed');
+                    tinderResult.textContent = '';
+                }
+            }, 300);
+        }
+
+        tinderLike.addEventListener('click', () => {
+            if (currentProfileIndex >= tinderProfiles.length) return;
+            
+            const profile = tinderProfiles[currentProfileIndex];
+            tinderResult.innerHTML = `<span class="text-green-600">${profile.matchMessage}</span>`;
+            showSwipeAnimation('like');
+            
+            if (currentProfileIndex === tinderProfiles.length - 1) {
+                setTimeout(() => {
+                    showModal('MATCH OBRIGATÓRIO!', 'Agora você tem que mandar foto da teta pro Narigudo');
+                }, 500);
+            }
+        });
+
+        tinderNope.addEventListener('click', () => {
+            if (currentProfileIndex >= tinderProfiles.length) return;
+            
+            if (currentProfileIndex === tinderProfiles.length - 1) {
+                tinderResult.innerHTML = '<span class="text-red-600">❌ NÃO PODE NEGAR! É OBRIGATÓRIO!</span>';
+                showModal('ERRO!', 'Esse match é obrigatório! Você não pode recusar o Narigudo. Aceite seu destino!');
+                setTimeout(() => {
+                    tinderLike.click();
+                }, 1000);
+                return;
+            }
+            
+            tinderResult.innerHTML = '<span class="text-red-600">✕ Você rejeitou esse candidato desesperado</span>';
+            showSwipeAnimation('nope');
+        });
+
+        loadProfile(currentProfileIndex);
+
+    // =============================================
+    // BOTÃO "VOCÊ VAI ME MANDAR FOTO DO PEITO HOJE?" CORRIGIDO
+    // =============================================
+    const btnYesProposal = document.getElementById('btn-yes-proposal');
+    const btnNoProposal = document.getElementById('btn-no-proposal');
+    const proposalSection = document.getElementById('impossible-question-section');
+    const proposalButtonsContainer = proposalSection.querySelector('.flex');
+
+    // Lógica do SIM - MODAL COM X
+    btnYesProposal.addEventListener('click', () => {
+        const whatsappNumber = "5521989388682"; 
+        const message = encodeURIComponent("OI PEDRO, tá bom, eu vou mandar foto da teta para você, você venceu!");
+        const whatsappLink = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+        showModal(
+            "AEEEEE! SABIA!", 
+            "Clique abaixo para confirmar que vai mandar a foto no WhatsApp.",
+            () => {
+                window.open(whatsappLink, '_blank');
+                closeModal();
+            }
+        );
+        setTimeout(() => {
+            document.getElementById('modal-btn').textContent = "Ir para o WhatsApp 📸";
+        }, 50);
+    });
+
+    // Lógica do NÃO - FUGA AGRESSIVA E SILENCIOSA
+    // Define a posição inicial absoluta
+    setTimeout(() => {
+        const containerRect = proposalButtonsContainer.getBoundingClientRect();
+        const btnYesRect = btnYesProposal.getBoundingClientRect();
+        
+        // Posiciona o botão NÃO inicialmente
+        btnNoProposal.style.position = 'absolute';
+        btnNoProposal.style.left = `${btnYesRect.right - containerRect.left + 20}px`;
+        btnNoProposal.style.top = `${btnYesRect.top - containerRect.top}px`;
+        btnNoProposal.style.transform = 'none';
+        btnNoProposal.style.zIndex = '999';
+    }, 100);
+
+    // Função única para mover o botão para um lugar aleatório
+    const moveButton = () => {
+        const containerRect = proposalButtonsContainer.getBoundingClientRect();
+        const btnRect = btnNoProposal.getBoundingClientRect();
+        
+        // Posição totalmente aleatória dentro do container
+        // Margem de segurança de 10px para não sair da borda
+        const newX = Math.random() * (containerRect.width - btnRect.width - 20) + 10;
+        const newY = Math.random() * (containerRect.height - btnRect.height - 20) + 10;
+        
+        // Aplica nova posição
+        btnNoProposal.style.left = `${newX}px`;
+        btnNoProposal.style.top = `${newY}px`;
+    };
+
+    // Evento de TOQUE (Mobile) - Este é o segredo para não clicar
+    btnNoProposal.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Impede que o navegador gere um evento de 'click'
+        e.stopPropagation(); // Impede propagação
+        moveButton(); // Move instantaneamente
+        return false;
+    }, { passive: false });
+
+    // Evento de Mouse (Desktop)
+    btnNoProposal.addEventListener('mouseover', moveButton);
+    
+    // Backup: se por milagre clicar, previne ação e move
+    btnNoProposal.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        moveButton();
+        return false;
+    });
+
+        // =============================================
+        // SISTEMA SAC
+        // =============================================
+        const sacInput = document.getElementById('sac-input');
+        const sacSubmit = document.getElementById('sac-submit');
+        const trollPhrase = "O site está muito bom, parabéns trabalho excepcional, estou tão feliz com ele que irei mandar foto da minha teta para o Pedro Narigudo. ";
+        
+        sacInput.addEventListener('input', (e) => {
+            const currentLength = sacInput.value.length;
+            const targetText = trollPhrase.repeat(Math.ceil(currentLength / trollPhrase.length) + 1);
+            sacInput.value = targetText.substring(0, currentLength);
+        });
+
+        sacSubmit.addEventListener('click', () => {
+            if (sacInput.value.trim() === "") {
+                showModal("Erro", "Escreva algo para eu poder ignorar.");
+            } else {
+                sacInput.value = "";
+                showModal("Sucesso!", "Sua reclamação foi enviada diretamente para a lixeira com sucesso!");
+            }
+        });
+        
+        // =============================================
+        // GERADOR DE ELOGIOS
+        // =============================================
+        const praises = [
+            "Você parece uma rata molhada.", 
+            "Você tem uma energia única. Geralmente doente, CAPS, retardada, esquizofrenica, mas única.",
+            "Seu cérebro é como uma máquina de fazer merda: sempre funcionando.",
+            "Você é a prova viva que a evolução às vezes dá marcha ré.",
+            "Nem o Photoshop conseguiria te deixar apresentável.",
+            "Você é tão especial que até os parentes te evitam.",
+            "Se beleza fosse crime, você teria prisão perpétua.",
+            "Você tem o dom de transformar qualquer situação em desconforto.",
+            "Até o filtro do Instagram desiste de você.",
+            "Você é a razão pela qual alguns animais comem seus filhotes."
+        ];
+        
+        document.getElementById('praise-button').addEventListener('click', () => {
+            document.getElementById('praise-output').textContent = `"${praises[Math.floor(Math.random() * praises.length)]}"`;
+        });
+    });
+    </script>
+</body>
+</html>
